@@ -40,41 +40,17 @@ function initButtons() {
     var pointTimes = [];
     var lastPoint = null;
         
-    var pointTable = new Handsontable(
-        document.getElementById('pointTable'),
-        {
-            colHeaders: ['Time', 'X', 'Y'],
-            columns: [
-                {
-                    data: 'time',
-                    type: 'numeric',
-                    format: '0.000'
-                },
-                {
-                    data: 'x',
-                    type: 'numeric'
-                },
-                {
-                    data: 'y',
-                    type: 'numeric'
-                }
-            ],
-            colWidths: 80,
-            currentRowClassName: 'selected-point-row'
-        }
-    );
-    
     
     // Time / distance data
     var measurements = [];
     var measureTimes = [];
     var measurePositions = [];
     var startTime = 0;
-    
+    var numRuns = 1;
     var measureTable = new Handsontable(
         document.getElementById('measureTable'),
         {
-            colHeaders: ['Time', 'Position'],
+            colHeaders: ['Time', 'Run #1'],
             columns: [
                 {
                     data: 'time',
@@ -83,7 +59,7 @@ function initButtons() {
                     readOnly: true
                 },
                 {
-                    data: 'position',
+                    data: 'position1',
                     type: 'numeric',
                     format: '0.000'
                 }
@@ -94,12 +70,13 @@ function initButtons() {
             afterChange: (changes, source) => {
                 if(changes) {
                     var change = changes[0];
-                    if(change[1] == "position") {
+                    if(change[1].includes("position")) {
                         // TODO: cleanup
-                        var i = change[0];
-                        measurements[i].position = change[3];
+                        var i = change[0]; // get the row
+                        var meas = measurements[i]
+                        meas["position" + numRuns] = change[3]; // set the value
                         measureTimes[i] = measurements[i].time;
-                        measurePositions[i] = measurements[i].position;
+                        measurePositions[i] = meas["position" + numRuns];
                         updateChart();
                     }
                 }
@@ -109,9 +86,21 @@ function initButtons() {
     
     function updateChart() {
         var dataPts = [];
-        for(var i=0; i < measurements.length; i++) {
-            dataPts.push({x:measurements[i].time, y:measurements[i].position});
-        }
+        var lineData = [];
+        for (var j=0; j < numRuns; j++) {
+            for(var i=0; i < measurements.length; i++) {
+                var meas = measurements[i]
+                var run = (j + 1)
+                dataPts.push({x:meas.time, y:meas["position" + run]});
+            }
+            lineData.push({        
+                type: "line",
+                dataPoints: dataPts,
+                toolTipContent: "{x} s : {y}"
+            })
+            dataPts = []
+        }        
+        
         var chart = new CanvasJS.Chart("measureChart",
         {
             axisX: {
@@ -122,11 +111,7 @@ function initButtons() {
             },
             axisY:{
             },
-            data: [{        
-                type: "line",
-                dataPoints: dataPts,
-                toolTipContent: "{x} s : {y}"
-            }]
+            data: lineData
         });
         
         chart.render();
@@ -169,6 +154,7 @@ function initButtons() {
 	function videoTimeDelta(delta) {
 		if (video.paused == true) {
 		    setVideoTime(video.currentTime + delta);
+            draw(video,canvas.getContext('2d'),canvasWidth,canvasHeight, false); // updates the canvas
         } 
 	}
     
@@ -287,13 +273,7 @@ function initButtons() {
 		document.getElementById("duration").innerHTML = video.duration.toFixed(3);
         startTime = 0;
 		initCanvas(video, canvas);
-        
-        // jump video to point time on row selection
-        pointTable.updateSettings({
-            afterSelectionEnd: function(e) {
-                setVideoTime(pointTimes[e] + startTime);
-            }
-        });
+
         
         // jump video to point time on row selection
         measureTable.updateSettings({
@@ -388,7 +368,7 @@ function initButtons() {
         console.log("draw");
        if(repeat && (v.paused || v.ended)) return false;
        
-       c.clearRect(0, 0, w, h);
+//       c.clearRect(0, 0, w, h); // shouldn't be needed since we are redrawing over the entire canvas
 	   c.drawImage(v,0,0,w,h);
        if(repeat) {
 	       setTimeout(draw,20,v,c,w,h, true);
@@ -407,20 +387,65 @@ function initButtons() {
        }
 	}
     
+    var numRuns = 1;
+    var columnHeaders = ['Time', 'Run #' + numRuns];
+    var columnData = [
+                {
+                    data: 'time',
+                    type: 'numeric',
+                    format: '0.000',
+                    readOnly: true
+                },
+                {
+                    data: 'position1',
+                    type: 'numeric',
+                    format: '0.000'
+                }
+            ]
+    
     var resetTimerBtn = document.getElementById("resetTimerBtn");
     
     resetTimerBtn.addEventListener("click", (e) => {
         startTime = video.currentTime;
         updateTimeDisplay();
         console.log("new start time: " + startTime);
+        
+        numRuns++;
+        columnHeaders = columnHeaders.concat(['Run #' + numRuns]);
+        columnData = columnData.concat([{
+                    data: 'position' + numRuns,
+                    type: 'numeric',
+                    format: '0.000'
+                }]);
+
+        // adds a new column per click
+        measureTable.updateSettings({
+            columns: columnData,
+            colHeaders: columnHeaders
+        });        
     });
     
     addEntryBtn.addEventListener("click", (e) => {
         var time = video.currentTime - startTime;
+        
+        if (time < 0) {
+            startTime = video.currentTime;
+            console.log("negative time, resetting starttime \nnew start time: " + startTime);
+            time = video.currentTime - startTime;
+            
+
+        }
+        updateTimeDisplay();
         addTimeEntry(time); 
     });
     
+    document.measureTable = measureTable;
+    document.measurements = measurements;
+    document.measureTable.updateChart = updateChart()
+    
+    
     function addTimeEntry(time) {
+        console.log("time: " + time)
         if(measureTimes.indexOf(time) != -1) return;
         
         for(var i=0; i < measurements.length; i++) {
@@ -429,10 +454,10 @@ function initButtons() {
             }
         }
         measurements.splice(i, 0, {time: Math.round(time * 1000) / 1000});
-        
         //update table
         measureTable.loadData(measurements);
-        measureTable.selectCell(i, 1);
+        measureTable.selectCell(i, numRuns);
+        updateChart();
     }
 
     deleteEntryBtn.addEventListener("click", (e) => {
@@ -452,41 +477,7 @@ function initButtons() {
         updateChart();
     }
 
-    /*
-    canvas.addEventListener("click", (e) => {
-        addPoint(e.offsetX, e.offsetY);
-    });
-    */
-    
-    function addPoint(x, y) {
-        var time = video.currentTime;
-        
-        var replace = false;
-        for(var i=0; i < pointTimes.length; i++) {
-            var existingTime = pointTimes[i];
-            if(time == existingTime) {
-                replace = true;
-                break;
-            }
-            else if(time < existingTime) {
-                break;
-            }
-        }
-        
-        var pt = {time:time, x:x, y:y};
-        if(replace) {
-            pointTimes[i] = time;
-            points[i] = pt;
-        } else {
-            pointTimes.splice(i, 0, time);
-            points.splice(i, 0, pt);
-        }
-        draw(video, canvas.getContext('2d'), canvasWidth, canvasHeight, false);
-        
-        //update table
-        pointTable.loadData(points);
-    }
-    
+
     function drawPoint(x, y, alpha=1) {
         var ctx = canvas.getContext('2d');
         ctx.fillStyle = "rgba(255, 0, 0, " + alpha + ")";
@@ -495,3 +486,4 @@ function initButtons() {
         ctx.fill();
     }
 }
+
