@@ -111,7 +111,8 @@ function initButtons() {
             },
             axisY:{
             },
-            data: lineData
+            data: lineData,
+            exportEnabled: true,
         });
         
         chart.render();
@@ -191,8 +192,20 @@ function initButtons() {
 	fps60Button.addEventListener("click",function(){ setFPS(60) }, false);
 	
 	// Enables the +/- functions of the framerate buttons
-	plusButton.addEventListener("click", function(){videoTimeDelta(1/video.fps)});
-	minusButton.addEventListener("click", function(){videoTimeDelta(-1/video.fps)});
+	plusButton.addEventListener("click", function(){
+        if (video.fps == 9999999) {
+            alert("FPS not set!");
+        } else {
+            videoTimeDelta(1/video.fps)
+        }
+    });
+	minusButton.addEventListener("click", function(){
+        if (video.fps == 9999999) {
+            alert("FPS not set!");
+        } else {
+            videoTimeDelta(-1/video.fps)
+        }
+    });
 	
 	// Event listener for the play/pause button
 	playButton.addEventListener("click", function() {
@@ -313,7 +326,7 @@ function initButtons() {
 	// Allows keyboard controls
 	document.onkeypress=function(e){
 		var key = e.charCode; 
-		// console.log(e.charCode) // uncomment this to see live key presses
+		console.log("Key code:" + e.charCode.toString()) // uncomment this to see live key presses
 		if (key == 112 && video.loaded == true) { // p : play
 			playButton.click()
 		} else if (key == 102) {
@@ -321,10 +334,19 @@ function initButtons() {
 			fullScreenButton.click()
 		} else if (key == 45 || key == 95) {
 			// - or _ : go back a frame
-			minusButton.click()
+            if (video.fps == 9999999) {
+                alert("FPS not set!");
+            } else {
+                minusButton.click()
+            }
+			
 		} else if (key == 61 || key == 43 ) {
 			// + or = : go forward a frame
-			plusButton.click()
+            if (video.fps == 9999999) {
+                alert("FPS not set!");
+            } else {
+			    plusButton.click()
+            }
 		} else if (key == 109) {
 			// m : mute
 			muteButton.click()
