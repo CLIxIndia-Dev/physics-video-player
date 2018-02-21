@@ -11,7 +11,11 @@ function videoPlayerInit() {
     inputNode = document.getElementById('input'); 
 	inputNode.addEventListener('change', playFile, false);
 	initButtons();
-}
+    
+    if (navigator.userAgent.indexOf("Chrome") == -1) {
+            alert('This tool is written for Chrome49+.\nPlease change to a supported browser.')
+    }
+};
 
 function initButtons() {
 	// Buttons	
@@ -27,7 +31,7 @@ function initButtons() {
 	var volumeBar = document.getElementById("volume-bar");
 
 	// Time
-	var currentTime = document.getElementById("current-time");
+	var currentTime = document.getElementById("current-time")
 	
 	// Video
 	var video = document.getElementById("video");
@@ -43,40 +47,48 @@ function initButtons() {
     
     // Time / distance data
     var measurements = [];
-    var measureTimes = [];
-    var measurePositions = [];
+    document.measureTimes = [];
+//    console.log('measuretimes:' + document.measureTimes)
+//    document.measurePositions = [];
     var startTime = 0;
-    var numRuns = 1;
+    document.numRuns = 0;
+    
+    var columnHeaders = ['Time'];
+    var columnData = [
+                {
+                    data: 'time',
+                    type: 'numeric',
+                    format: '0.000',
+                    readOnly: true
+                }
+    ]
     var measureTable = new Handsontable(
         document.getElementById('measureTable'),
         {
-            colHeaders: ['Time', 'Run #1'],
+            colHeaders: ['Time'],
             columns: [
                 {
                     data: 'time',
                     type: 'numeric',
                     format: '0.000',
                     readOnly: true
-                },
-                {
-                    data: 'position1',
-                    type: 'numeric',
-                    format: '0.000'
                 }
             ],
             colWidths: 80,
             currentRowClassName: 'selected-point-row',
-            multiSelect: true,
+            multiSelect: false,
+            outsideClickDeselects: false,
             afterChange: (changes, source) => {
                 if(changes) {
+                    console.log(changes)
                     var change = changes[0];
                     if(change[1].includes("position")) {
                         // TODO: cleanup
                         var i = change[0]; // get the row
-                        var meas = measurements[i];
-                        meas["position" + numRuns] = change[3]; // set the value
-                        measureTimes[i] = measurements[i].time;
-                        measurePositions[i] = meas["position" + numRuns];
+//                        var meas = measurements[i]
+//                        meas["position" + document.numRuns] = change[3]; // set the value
+                        document.measureTimes[i] = measurements[i].time;
+//                        document.measurePositions[i] = meas["position" + document.numRuns];
                         updateChart();
                     }
                 }
@@ -87,20 +99,28 @@ function initButtons() {
     function updateChart() {
         var dataPts = [];
         var lineData = [];
-        for (var j=0; j < numRuns; j++) {
-            for(var i=0; i < measurements.length; i++) {
-                var meas = measurements[i];
-                var run = (j + 1);
-                dataPts.push({x:meas.time, y:meas["position" + run]});
+//        console.log("numRuns: " + document.numRuns)
+//        console.log("measurements ")
+//        console.log(document.measurements)
+        
+        for (var run=1; run <= document.numRuns; run++) {
+            for(var i=0; i < document.measurements.length; i++) {
+                var meas = document.measurements[i]
+//                var run = (j + 1)
+                if (meas["position" + run] != null) {
+                    dataPts.push({x:meas.time, y:meas["position" + run]});
+                }
             }
             lineData.push({        
                 type: "line",
                 dataPoints: dataPts,
                 toolTipContent: "{x} s : {y}"
-            });
-            dataPts = [];
-        }        
+            })
+//            console.log(dataPts)
+            dataPts = []
+        }       
         
+//        console.log(lineData)
         var chart = new CanvasJS.Chart("measureChart",
         {
             axisX: {
@@ -133,21 +153,21 @@ function initButtons() {
 	function hideEnableShowFPS() {
 		var enableButton = document.getElementById('enable-frame-seek');
 		fpsButtons.classList.remove("hidden");
-	}
+	};
 
     function hideFPSButtons() {
-		var frameButtons = document.getElementsByClassName('frame-btn');
+		var frameButtons = document.getElementsByClassName('frame-btn')
 		fpsButtons.classList.add("hidden");
         
 		for (var i = 0; i < frameButtons.length; i++) {
 			frameButtons[i].classList.remove("disabled");
             frameButtons[i].disabled = false;
-		}
+		};
 	}
 
 	function setFPS(framerate) {
 		video.fps = framerate;
-		hideFPSButtons();
+		hideFPSButtons()
 	}
 
 	// The delta requires pausing since this level of fine control
@@ -184,18 +204,14 @@ function initButtons() {
 	
 	// Listener to get the FPS from the buttons
 	video.fps = 9999999; // dummy	
-    fps15Button.addEventListener("click",function(){ setFPS(15); }, false);
-	fps24Button.addEventListener("click",function(){ setFPS(24); }, false);
-	fps25Button.addEventListener("click",function(){ setFPS(24.99); }, false);
-	fps30Button.addEventListener("click",function(){ setFPS(30); }, false);
-	fps50Button.addEventListener("click",function(){ setFPS(50); }, false);
-	fps60Button.addEventListener("click",function(){ setFPS(60); }, false);
+    fps15Button.addEventListener("click",function(){ setFPS(15) }, false);
+	fps24Button.addEventListener("click",function(){ setFPS(24) }, false);
+	fps25Button.addEventListener("click",function(){ setFPS(24.99) }, false);
+	fps30Button.addEventListener("click",function(){ setFPS(30) }, false);
+	fps50Button.addEventListener("click",function(){ setFPS(50) }, false);
+	fps60Button.addEventListener("click",function(){ setFPS(60) }, false);
 	
 	// Enables the +/- functions of the framerate buttons
-<<<<<<< HEAD
-	plusButton.addEventListener("click", function(){videoTimeDelta(1/video.fps);});
-	minusButton.addEventListener("click", function(){videoTimeDelta(-1/video.fps);});
-=======
 	plusButton.addEventListener("click", function(){
         if (video.fps == 9999999) {
             alert("FPS not set!");
@@ -210,7 +226,6 @@ function initButtons() {
             videoTimeDelta(-1/video.fps)
         }
     });
->>>>>>> 46f61c464fbc17e901d027f877e1dffa71c08534
 	
 	// Event listener for the play/pause button
 	playButton.addEventListener("click", function() {
@@ -292,14 +307,6 @@ function initButtons() {
         startTime = 0;
 		initCanvas(video, canvas);
 
-        
-        // jump video to point time on row selection
-        measureTable.updateSettings({
-            afterSelectionEnd: function(e) {
-                setVideoTime(measurements[e].time + startTime);
-            }
-        });
-        
         videoControls.classList.remove("hidden");
 	};
 	
@@ -330,56 +337,72 @@ function initButtons() {
 
 	// Allows keyboard controls
 	document.onkeypress=function(e){
-		var key = e.charCode; 
+		var key = e.charCode;
+        var hideOutput = false;
 		console.log("Key code:" + e.charCode.toString()) // uncomment this to see live key presses
-		if (key == 112 && video.loaded == true) { // p : play
-			playButton.click();
-		} else if (key == 102) {
-			// f : fullscreen
-			fullScreenButton.click();
-		} else if (key == 45 || key == 95) {
-			// - or _ : go back a frame
-<<<<<<< HEAD
-			minusButton.click();
-		} else if (key == 61 || key == 43 ) {
-			// + or = : go forward a frame
-			plusButton.click();
-=======
-            if (video.fps == 9999999) {
-                alert("FPS not set!");
-            } else {
-                minusButton.click()
+        if (video.loaded == true) {
+            if (key == 112) { // p : play
+                playButton.click()
+                hideOutput = true;
+            } else if (key == 102) {
+                // f : fullscreen
+                fullScreenButton.click()
+                return false
+            } else if (key == 45 || key == 95) {
+                // - or _ : go back a frame
+                if (video.fps == 9999999) {
+                    alert("FPS not set!");
+                } else {
+                    minusButton.click()
+                }
+                return false			
+            } else if (key == 61 || key == 43 ) {
+                // + or = : go forward a frame
+                if (video.fps == 9999999) {
+                    alert("FPS not set!");
+                } else {
+                    plusButton.click()
+                }
+                return false
+            } else if (key == 109) {
+                // m : mute
+                muteButton.click()
+                return false
             }
-			
-		} else if (key == 61 || key == 43 ) {
-			// + or = : go forward a frame
-            if (video.fps == 9999999) {
-                alert("FPS not set!");
-            } else {
-			    plusButton.click()
+        }
+    }
+    
+    measureTable.updateSettings({
+        beforeKeyDown: function (e) {
+            var key = e.keyCode
+            // this bit prevents hotkey presses from being entered into the spreadsheet
+            // 80 is p, 70 is f, -/_ is 189,+/= is 187, m is 77
+            // Not sure how stable these are across browsers & versions
+            if (video.loaded == true) {
+                if (key == 80 || key == 70 || key == 189 || key == 187 || key == 77 ) {
+//                    console.log(key)
+                    document.measureTable.deselectCell()
+                    e.stopImmediatePropagation();
+                }
             }
->>>>>>> 46f61c464fbc17e901d027f877e1dffa71c08534
-		} else if (key == 109) {
-			// m : mute
-			muteButton.click();
-		}
-	};
+        }
+    });
 
 	// This handles rotating the video. There's probably a more reliable way to do this
 	// since more/other/complex transforms may be done on the element
 	function rotateElement(element) {
 		if (element.style.transform === 'rotate(90deg)') { 
-			element.style.transform = 'rotate(180deg)'; }
+			element.style.transform = 'rotate(180deg)' }
 		else if (element.style.transform === 'rotate(180deg)') { 
-			element.style.transform = 'rotate(270deg)'; }
+			element.style.transform = 'rotate(270deg)' }
 		else if (element.style.transform === 'rotate(270deg)') { 
-			element.style.transform = 'rotate(;;0deg)' }		
-		else { element.style.transform='rotate(90deg)'; }
+			element.style.transform = 'rotate(0deg)' }		
+		else { element.style.transform='rotate(90deg)' }
 	}
 
 	// Listener for the rotate button
 	var rotateButton = document.getElementById("rotate-video");	
-	rotateButton.addEventListener("click", function(){rotateElement(canvas);});
+	rotateButton.addEventListener("click", function(){rotateElement(canvas)});
 
 
 	// Draws the video on the canvas
@@ -399,7 +422,7 @@ function initButtons() {
 	}
     
     function draw(v,c,w,h,repeat) {
-        console.log("draw");
+//        console.log("draw");
        if(repeat && (v.paused || v.ended)) return false;
        
 //       c.clearRect(0, 0, w, h); // shouldn't be needed since we are redrawing over the entire canvas
@@ -421,45 +444,43 @@ function initButtons() {
        }
 	}
     
-    var numRuns = 1;
-    var columnHeaders = ['Time', 'Run #' + numRuns];
-    var columnData = [
-                {
-                    data: 'time',
-                    type: 'numeric',
-                    format: '0.000',
-                    readOnly: true
-                },
-                {
-                    data: 'position1',
-                    type: 'numeric',
-                    format: '0.000'
-                }
-            ];
+
+
     
     var resetTimerBtn = document.getElementById("resetTimerBtn");
-    
+   
     resetTimerBtn.addEventListener("click", (e) => {
+        measureTable.selectCell(0,0)
         startTime = video.currentTime;
         updateTimeDisplay();
         console.log("new start time: " + startTime);
         
-        numRuns++;
-        columnHeaders = columnHeaders.concat(['Run #' + numRuns]);
+        document.numRuns++;
+        columnHeaders = columnHeaders.concat(['Run #' + document.numRuns]);
         columnData = columnData.concat([{
-                    data: 'position' + numRuns,
+                    data: 'position' + document.numRuns,
                     type: 'numeric',
                     format: '0.000'
                 }]);
 
         // adds a new column per click
+        document.readOnlyRows = []
         measureTable.updateSettings({
             columns: columnData,
-            colHeaders: columnHeaders
-        });        
+            colHeaders: columnHeaders,
+            cells: function (row, col) {
+                var cellProperties = {};
+                if (col == 0) {
+                    cellProperties.readOnly = true;
+                }
+                return cellProperties;
+            }
+        });       
+        document.measureTable.loadData(document.measurements);
     });
     
     addEntryBtn.addEventListener("click", (e) => {
+        measureTable.selectCell(0,0)
         var time = video.currentTime - startTime;
         
         if (time < 0) {
@@ -469,45 +490,69 @@ function initButtons() {
             
 
         }
+        time = Math.round(time * 1000) / 1000
         updateTimeDisplay();
+//        console.log(time)
         addTimeEntry(time); 
+        measureTable.updateSettings({
+            cells: function (row,col) { 
+                var cellProperties = {};       
+                if (col == 0) {
+                    cellProperties.readOnly = true;
+                }
+                return cellProperties;
+            }
+        });   
+        
     });
     
     document.measureTable = measureTable;
     document.measurements = measurements;
-    document.measureTable.updateChart = updateChart();
+    document.measureTable.updateChart = updateChart()
     
     
     function addTimeEntry(time) {
-        console.log("time: " + time);
-        if(measureTimes.indexOf(time) != -1) return;
-        
-        for(var i=0; i < measurements.length; i++) {
-            if(measureTimes[i] > time ) {
-                break;
-            }
-        }
-        measurements.splice(i, 0, {time: Math.round(time * 1000) / 1000});
-        //update table
-        measureTable.loadData(measurements);
-        measureTable.selectCell(i, numRuns);
+        if(document.measureTimes.indexOf(time) != -1) {
+            alert("A row for this time already exists.")
+            return
+        };
+
+//        for(var i=0; i < document.measurements.length; i++) {
+//            if(document.measureTimes[i] > time ) {
+//                break;
+//            }
+//        }
+        document.measureTimes.push(time)
+        document.measureTimes.sort(function(a,b){return a - b})
+        document.measurements.push({time: Math.round(time * 1000) / 1000});
+        document.measurements = document.measurements.sort(function(a,b){return a.time - b.time})
+    
+        document.measureTable.loadData(document.measurements);
+        document.measureTable.selectCell(document.measureTimes.indexOf(time), document.numRuns);
         updateChart();
+        console.log(document.measurements)
     }
 
     deleteEntryBtn.addEventListener("click", (e) => {
-        var time = video.currentTime - startTime;
-        deleteTimeEntry(time); 
+//        var time = video.currentTime - startTime;
+        var selection = document.measureTable.getSelected()
+        deleteTimeEntry(selection); 
     });
     
-    function deleteTimeEntry(time) {
-        var i = measureTimes.indexOf(time);
-        if(i == -1) return;
-        
-        measurements.splice(i, 1);
-        measureTimes.splice(i, 1);
-        measurePositions.splice(i, 1);
-        
-        measureTable.loadData(measurements);
+    function deleteTimeEntry(cell) {
+        console.log(cell)
+//        var i = document.measureTimes.indexOf(time);
+//        if (cell[1] == 0) return; // can't delete times!
+        var cellX = cell[1]
+        var cellY = cell[0]
+        console.log('deleteing xy: ' + cellX + ' ' + cellY)
+        if (cellX == 0) {
+            document.measurements.splice(cellY,1)
+            document.measureTimes.splice(cellY,1)
+        } else {
+            document.measurements[cellY]["position" + cellX] = null
+        }
+        document.measureTable.loadData(document.measurements);
         updateChart();
     }
 
