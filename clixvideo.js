@@ -11,7 +11,7 @@ function videoPlayerInit() {
     inputNode = document.getElementById('input'); 
 	inputNode.addEventListener('change', playFile, false);
 	initButtons();
-};
+}
 
 function initButtons() {
 	// Buttons	
@@ -27,7 +27,7 @@ function initButtons() {
 	var volumeBar = document.getElementById("volume-bar");
 
 	// Time
-	var currentTime = document.getElementById("current-time")
+	var currentTime = document.getElementById("current-time");
 	
 	// Video
 	var video = document.getElementById("video");
@@ -73,7 +73,7 @@ function initButtons() {
                     if(change[1].includes("position")) {
                         // TODO: cleanup
                         var i = change[0]; // get the row
-                        var meas = measurements[i]
+                        var meas = measurements[i];
                         meas["position" + numRuns] = change[3]; // set the value
                         measureTimes[i] = measurements[i].time;
                         measurePositions[i] = meas["position" + numRuns];
@@ -89,16 +89,16 @@ function initButtons() {
         var lineData = [];
         for (var j=0; j < numRuns; j++) {
             for(var i=0; i < measurements.length; i++) {
-                var meas = measurements[i]
-                var run = (j + 1)
+                var meas = measurements[i];
+                var run = (j + 1);
                 dataPts.push({x:meas.time, y:meas["position" + run]});
             }
             lineData.push({        
                 type: "line",
                 dataPoints: dataPts,
                 toolTipContent: "{x} s : {y}"
-            })
-            dataPts = []
+            });
+            dataPts = [];
         }        
         
         var chart = new CanvasJS.Chart("measureChart",
@@ -132,21 +132,21 @@ function initButtons() {
 	function hideEnableShowFPS() {
 		var enableButton = document.getElementById('enable-frame-seek');
 		fpsButtons.classList.remove("hidden");
-	};
+	}
 
     function hideFPSButtons() {
-		var frameButtons = document.getElementsByClassName('frame-btn')
+		var frameButtons = document.getElementsByClassName('frame-btn');
 		fpsButtons.classList.add("hidden");
         
 		for (var i = 0; i < frameButtons.length; i++) {
 			frameButtons[i].classList.remove("disabled");
             frameButtons[i].disabled = false;
-		};
+		}
 	}
 
 	function setFPS(framerate) {
 		video.fps = framerate;
-		hideFPSButtons()
+		hideFPSButtons();
 	}
 
 	// The delta requires pausing since this level of fine control
@@ -183,16 +183,16 @@ function initButtons() {
 	
 	// Listener to get the FPS from the buttons
 	video.fps = 9999999; // dummy	
-    fps15Button.addEventListener("click",function(){ setFPS(15) }, false);
-	fps24Button.addEventListener("click",function(){ setFPS(24) }, false);
-	fps25Button.addEventListener("click",function(){ setFPS(24.99) }, false);
-	fps30Button.addEventListener("click",function(){ setFPS(30) }, false);
-	fps50Button.addEventListener("click",function(){ setFPS(50) }, false);
-	fps60Button.addEventListener("click",function(){ setFPS(60) }, false);
+    fps15Button.addEventListener("click",function(){ setFPS(15); }, false);
+	fps24Button.addEventListener("click",function(){ setFPS(24); }, false);
+	fps25Button.addEventListener("click",function(){ setFPS(24.99); }, false);
+	fps30Button.addEventListener("click",function(){ setFPS(30); }, false);
+	fps50Button.addEventListener("click",function(){ setFPS(50); }, false);
+	fps60Button.addEventListener("click",function(){ setFPS(60); }, false);
 	
 	// Enables the +/- functions of the framerate buttons
-	plusButton.addEventListener("click", function(){videoTimeDelta(1/video.fps)});
-	minusButton.addEventListener("click", function(){videoTimeDelta(-1/video.fps)});
+	plusButton.addEventListener("click", function(){videoTimeDelta(1/video.fps);});
+	minusButton.addEventListener("click", function(){videoTimeDelta(-1/video.fps);});
 	
 	// Event listener for the play/pause button
 	playButton.addEventListener("click", function() {
@@ -315,37 +315,37 @@ function initButtons() {
 		var key = e.charCode; 
 		// console.log(e.charCode) // uncomment this to see live key presses
 		if (key == 112 && video.loaded == true) { // p : play
-			playButton.click()
+			playButton.click();
 		} else if (key == 102) {
 			// f : fullscreen
-			fullScreenButton.click()
+			fullScreenButton.click();
 		} else if (key == 45 || key == 95) {
 			// - or _ : go back a frame
-			minusButton.click()
+			minusButton.click();
 		} else if (key == 61 || key == 43 ) {
 			// + or = : go forward a frame
-			plusButton.click()
+			plusButton.click();
 		} else if (key == 109) {
 			// m : mute
-			muteButton.click()
-		};
-	}
+			muteButton.click();
+		}
+	};
 
 	// This handles rotating the video. There's probably a more reliable way to do this
 	// since more/other/complex transforms may be done on the element
 	function rotateElement(element) {
 		if (element.style.transform === 'rotate(90deg)') { 
-			element.style.transform = 'rotate(180deg)' }
+			element.style.transform = 'rotate(180deg)'; }
 		else if (element.style.transform === 'rotate(180deg)') { 
-			element.style.transform = 'rotate(270deg)' }
+			element.style.transform = 'rotate(270deg)'; }
 		else if (element.style.transform === 'rotate(270deg)') { 
-			element.style.transform = 'rotate(0deg)' }		
-		else { element.style.transform='rotate(90deg)' }
+			element.style.transform = 'rotate(;;0deg)' }		
+		else { element.style.transform='rotate(90deg)'; }
 	}
 
 	// Listener for the rotate button
 	var rotateButton = document.getElementById("rotate-video");	
-	rotateButton.addEventListener("click", function(){rotateElement(canvas)});
+	rotateButton.addEventListener("click", function(){rotateElement(canvas);});
 
 
 	// Draws the video on the canvas
@@ -401,7 +401,7 @@ function initButtons() {
                     type: 'numeric',
                     format: '0.000'
                 }
-            ]
+            ];
     
     var resetTimerBtn = document.getElementById("resetTimerBtn");
     
@@ -441,11 +441,11 @@ function initButtons() {
     
     document.measureTable = measureTable;
     document.measurements = measurements;
-    document.measureTable.updateChart = updateChart()
+    document.measureTable.updateChart = updateChart();
     
     
     function addTimeEntry(time) {
-        console.log("time: " + time)
+        console.log("time: " + time);
         if(measureTimes.indexOf(time) != -1) return;
         
         for(var i=0; i < measurements.length; i++) {
