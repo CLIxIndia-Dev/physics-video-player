@@ -517,11 +517,6 @@ function initButtons() {
             return
         };
 
-//        for(var i=0; i < document.measurements.length; i++) {
-//            if(document.measureTimes[i] > time ) {
-//                break;
-//            }
-//        }
         document.measureTimes.push(time)
         document.measureTimes.sort(function(a,b){return a - b})
         document.measurements.push({time: Math.round(time * 1000) / 1000});
@@ -534,15 +529,12 @@ function initButtons() {
     }
 
     deleteEntryBtn.addEventListener("click", (e) => {
-//        var time = video.currentTime - startTime;
         var selection = document.measureTable.getSelected()
         deleteTimeEntry(selection); 
     });
     
     function deleteTimeEntry(cell) {
         console.log(cell)
-//        var i = document.measureTimes.indexOf(time);
-//        if (cell[1] == 0) return; // can't delete times!
         var cellX = cell[1]
         var cellY = cell[0]
         console.log('deleteing xy: ' + cellX + ' ' + cellY)
