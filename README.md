@@ -12,11 +12,11 @@ Chrome 49+
 3) The video should display under the Browse... button along with controls.  
 4) If the video needs to be rotated, click the circle arrow in the video controls.  
 5) To enable frame-seeking, select the frame rate by clicking the cog wheel and choose the appropriate FPS.  
-6) Play the video or change the start time by clicking on the playback bar.  
-7) To make a measurement, click the "ADD" button to record the time and enable data entry.  
+6) Play the video or change the start time by clicking on the playback bar. When you reach the experimental run, click "RESET TIMER" to add a data column for the run. 
+7) To add a measurement, click the "ADD" button to record the time and enable data entry.  
 8) Type in a numerical value while a table value is selected.  
 9) Repeat as necessary.  
-10) To add data from another video, open a new file and click "RESET TIMER".  
+10) To add data from another run or video, navigate to it and then click "RESET TIMER".  
 11) As data accumulates, it will automatically plot the data in the graph below the video.  
 12) To save the graph, click the 3-dots icon and choose a format.  
 
